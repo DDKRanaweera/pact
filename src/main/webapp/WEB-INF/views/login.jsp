@@ -56,7 +56,7 @@
 
                                             <div class="form-floating mb-3">
                                                 <input class="form-control" id="inputEmail" type="text" placeholder="name@example.com" name="username"/>
-                                                <label for="inputEmail">Email address</label>
+                                                <label for="inputEmail">Email address or Username</label>
                                             </div>
                                             <div class="form-floating mb-3">
                                                 <input class="form-control" id="inputPassword" type="password" placeholder="Password" name="password" />
