@@ -51,8 +51,7 @@ public class AuthController {
             @RequestParam("email") String email,
             @RequestParam("password") String password,
             @RequestParam("confirmPassword") String confirmPassword,
-            Model model,
-            RedirectAttributes redirectAttributes
+            Model model
     ) {
         // Create a user object to retain values
         User user = new User();
@@ -99,31 +98,29 @@ public class AuthController {
 
         // Save the user (dummy logic for example purposes)
         user.setPasswordHash(passwordEncoder.encode(password)); // Assume password is hashed
-        user.setIsActive(true);
-        user.setIsVerified(true);
+        user.setIsActive(false);
+        user.setIsVerified(false);
         user.setRole("ROLE_USER");
         user.setCreatedAt(LocalDateTime.now());
         user.setOtp(generateOTP());
         user.setOtpGenerateTime(LocalDateTime.now());
         User savedUser = userService.createUser(user);
 
-        model.addAttribute("user", savedUser);
+        model.addAttribute("user", user);
         model.addAttribute("verificationFor", "REGISTRATION_VERIFICATION");
 
-//         boolean mailSent = mailService.sendAccountVerificationMail(fullName, savedUser.getToken(), savedUser.getOtp(), savedUser.getEmail());
-// //        boolean mailSent = true;
+        boolean mailSent = mailService.sendAccountVerificationMail(fullName, savedUser.getToken(), savedUser.getOtp(), savedUser.getEmail());
+//        boolean mailSent = true;
 
-//         if(mailSent){
-//             model.addAttribute("successMessage", "User registered successfully! Kindly check your email to verify your account.");
-//             return "otp-verification";
-//         }else {
-//             model.addAttribute("successMessage", "User registered successfully! Email sent failed. Kindly communicate with support team.");
-//         }
+        if(mailSent){
+            model.addAttribute("successMessage", "User registered successfully! Kindly check your email to verify your account.");
+            return "otp-verification";
+        }else {
+            model.addAttribute("successMessage", "User registered successfully! Email sent failed. Kindly communicate with support team.");
+        }
 
-//         model.addAttribute("user", null); // Clear user after successful registration
-//         return "register";
-        redirectAttributes.addFlashAttribute("successMessage", "Your account has been successfully verified. You can now login.");
-        return  "redirect:/login";
+        model.addAttribute("user", null); // Clear user after successful registration
+        return "register";
     }
 
 
@@ -202,7 +199,7 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public String forgotPasswordPost(@RequestParam("email") String email, Model model, RedirectAttributes redirectAttributes) {
+    public String forgotPasswordPost(@RequestParam("email") String email, Model model) {
         User userByEmail = userService.findUserByUsernameOrEmail(email, email);
 
         if (userByEmail == null) {
@@ -223,14 +220,11 @@ public class AuthController {
         model.addAttribute("verificationFor", "FORGOT_PASSWORD");
 
         if (mailSent) {
-            redirectAttributes.addFlashAttribute("successMessage", "A password reset link has been sent to your email. Please check your inbox.");
             model.addAttribute("successMessage", "A password reset link and OTP has been sent to your email. Please check your inbox.");
         } else {
-            redirectAttributes.addFlashAttribute("errorMessage", "There was an issue sending the email. Please try again or contact support for assistance.");
             model.addAttribute("errorMessage", "There was an issue sending the email. Please try again or contact support for assistance.");
         }
-        // return "otp-verification";
-        return "redirect:/login";
+        return "otp-verification";
     }
 
 

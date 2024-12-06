@@ -80,6 +80,11 @@ public class MailServiceImple implements MailService {
                         + "<p>If you prefer to reset your password immediately, click the button below:</p>"
                         + "<p><a href=\"" + resetPasswordUrl + "\" style=\"background-color: #4CAF50; color: white; padding: 14px 20px; text-align: center; text-decoration: none; border-radius: 5px;\">Reset Password</a></p>"
 
+                        // Option 2: OTP for Verification
+                        + "<p>Alternatively, if you wish to verify your identity using an OTP, use the following one-time password:</p>"
+                        + "<p><b>" + otp + "</b></p>"
+                        + "<p>Enter the OTP on the verification page to reset your password securely.</p>"
+
                         // Final reminder in case of no request
                         + "<p>If you did not request this password reset, please ignore this email. Your password will not be changed.</p>"
                         + "<p>Best regards,<br>PACT Team</p>"
