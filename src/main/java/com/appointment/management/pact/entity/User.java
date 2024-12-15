@@ -1,5 +1,7 @@
 package com.appointment.management.pact.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -15,7 +17,7 @@ public class User {
     @Column(name = "user_id")
     private Integer userId;
 
-    @Column(name = "fullname", length = 167)
+    @Column(name = "fullname", length = 100)
     private String fullname;
 
     @Column(name = "username", length = 50)
@@ -60,8 +62,16 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Calendar> calendars;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL)
     private List<UserAppointment> userAppointments;
 
-    // Getters and Setters
+    @JsonIgnore
+    public List<UserAppointment> getUserAppointments() {
+        return userAppointments;
+    }
+
+    @JsonProperty
+    public void setUserAppointments(List<UserAppointment> userAppointments) {
+        this.userAppointments = userAppointments;
+    }
 }
