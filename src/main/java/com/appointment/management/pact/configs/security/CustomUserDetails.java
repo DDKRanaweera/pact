@@ -60,9 +60,7 @@ public class CustomUserDetails implements UserDetails {
 		return user.getIsVerified();
 	}
 
-
-	public User getLoggedUser() {
+	public User getUser(){
 		return user;
 	}
-	
 }

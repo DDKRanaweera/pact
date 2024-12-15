@@ -1,7 +1,10 @@
 package com.appointment.management.pact.serviceimpl;
 
+import com.appointment.management.pact.entity.Appointment;
 import com.appointment.management.pact.entity.User;
+import com.appointment.management.pact.entity.UserAppointment;
 import com.appointment.management.pact.services.MailService;
+import com.appointment.management.pact.services.UserService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
@@ -13,10 +16,15 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 
 @Component
 public class MailServiceImple implements MailService {
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private JavaMailSender javaMailSender;
@@ -80,6 +88,11 @@ public class MailServiceImple implements MailService {
                         + "<p>If you prefer to reset your password immediately, click the button below:</p>"
                         + "<p><a href=\"" + resetPasswordUrl + "\" style=\"background-color: #4CAF50; color: white; padding: 14px 20px; text-align: center; text-decoration: none; border-radius: 5px;\">Reset Password</a></p>"
 
+                        // Option 2: OTP for Verification
+                        + "<p>Alternatively, if you wish to verify your identity using an OTP, use the following one-time password:</p>"
+                        + "<p><b>" + otp + "</b></p>"
+                        + "<p>Enter the OTP on the verification page to reset your password securely.</p>"
+
                         // Final reminder in case of no request
                         + "<p>If you did not request this password reset, please ignore this email. Your password will not be changed.</p>"
                         + "<p>Best regards,<br>PACT Team</p>"
@@ -89,6 +102,89 @@ public class MailServiceImple implements MailService {
         // Send the email
         return sendEmail(user.getEmail(), subject, htmlContent);
     }
+
+
+    @Override
+    public boolean notifyAuthorForNewAppointment(UserAppointment userAppointment) {
+        // Get the author and requested user details
+        User author = userService.getUserById(userAppointment.getAuthor().getUserId());
+        User requestedUser = userAppointment.getRequested_user();
+        Appointment appointment = userAppointment.getAppointment();
+
+        // Prepare email content
+        String subject = "New Appointment Request - PACT";
+        String appointmentTime = formatAppointmentTime(appointment.getStartTime(), appointment.getEndTime());
+
+        String htmlContent =
+                "<html>"
+                        + "<body style=\"font-family: Arial, sans-serif; color: #333;\">"
+                        + "<h2>New Appointment Request</h2>"
+                        + "<p>Dear <b>" + author.getFullname() + ",</b></p>"
+                        + "<p><b>" + requestedUser.getFullname() + "</b> has requested a new appointment with you. Here are the details:</p>"
+
+                        + "<p><b>Appointment Details:</b></p>"
+                        + "<ul>"
+                        + "<li><b>Location:</b> " + appointment.getLocation() + "</li>"
+                        + "<li><b>Description:</b> " + appointment.getDescription() + "</li>"
+                        + "<li><b>Date & Time:</b> " + appointmentTime + "</li>"
+                        + "</ul>"
+
+                        + "<p>Please log in to your dashboard to accept or decline this request.</p>"
+                        + "<p>Best regards,<br>PACT Team</p>"
+                        + "</body>"
+                        + "</html>";
+
+        // Send email
+        return sendEmail(author.getEmail(), subject, htmlContent);
+    }
+
+
+
+    @Override
+    public boolean notifyRequestedUserForAcceptedAppointment(UserAppointment userAppointment) {
+        // Get the author and requested user details
+        User author = userAppointment.getAuthor();
+        User requestedUser = userAppointment.getRequested_user();
+        Appointment appointment = userAppointment.getAppointment();
+
+        // Prepare email content
+        String subject = "Appointment Confirmed - PACT";
+        String appointmentTime = formatAppointmentTime(appointment.getStartTime(), appointment.getEndTime());
+
+        String htmlContent =
+                "<html>"
+                        + "<body style=\"font-family: Arial, sans-serif; color: #333;\">"
+                        + "<h2>Appointment Confirmed</h2>"
+                        + "<p>Dear <b>" + requestedUser.getFullname() + ",</b></p>"
+                        + "<p>We are pleased to inform you that <b>" + author.getFullname() + "</b> has accepted your appointment request. Below are the details of your confirmed appointment:</p>"
+
+                        + "<p><b>Appointment Details:</b></p>"
+                        + "<ul>"
+                        + "<li><b>Location:</b> " + appointment.getLocation() + "</li>"
+                        + "<li><b>Description:</b> " + appointment.getDescription() + "</li>"
+                        + "<li><b>Date & Time:</b> " + appointmentTime + "</li>"
+                        + "</ul>"
+
+                        + "<p>Please ensure that you are available during the scheduled time.</p>"
+                        + "<p>We look forward to your successful meeting.</p>"
+                        + "<p>Best regards,<br>PACT Team</p>"
+                        + "</body>"
+                        + "</html>";
+
+        // Send email
+        return sendEmail(requestedUser.getEmail(), subject, htmlContent);
+    }
+
+
+
+    /**
+     * Helper method to format appointment start and end times for readability.
+     */
+    private String formatAppointmentTime(LocalDateTime startTime, LocalDateTime endTime) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a");
+        return startTime.format(formatter) + " to " + endTime.format(formatter);
+    }
+
 
 
 
